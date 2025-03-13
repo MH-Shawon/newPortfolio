@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { getProfile } from "@/data/profile";
@@ -61,20 +63,15 @@ const Hero = () => {
       </div>
       <div className="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
         <div className="h-56 w-full bg-gradient-to-br from-indigo-600 to-purple-600 dark:from-indigo-800 dark:to-purple-900 sm:h-72 md:h-96 lg:w-full lg:h-full flex items-center justify-center">
-          {profile.image ? (
-            <div className="relative w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl">
-              <Image
-                src={profile.image}
-                alt={profile.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-full bg-white flex items-center justify-center text-6xl sm:text-7xl md:text-8xl font-bold text-indigo-600 shadow-xl">
-              {initials}
-            </div>
-          )}
+          <div className="relative w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-white shadow-xl">
+            <Image
+              src="/glasses.jpg"
+              alt="Profile"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
         </div>
       </div>
     </div>

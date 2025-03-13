@@ -2,20 +2,23 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { getAllProjects, Project } from "@/data/projects";
+import { getAllProjects } from "@/data/projects";
 import { useState, useEffect } from "react";
 
-const Projects = () => {
+const Projects = ({ showAll = false }) => {
   const [projects, setProjects] = useState([]);
   const [imageErrors, setImageErrors] = useState({});
 
   // Load projects when component mounts and when localStorage changes
   useEffect(() => {
-    setProjects(getAllProjects());
+    const allProjects = getAllProjects();
+    // If not showing all, only show the 3 most recent projects
+    setProjects(showAll ? allProjects : allProjects.slice(0, 3));
 
     // Listen for storage events to update projects when they change in another tab
     const handleStorageChange = () => {
-      setProjects(getAllProjects());
+      const updatedProjects = getAllProjects();
+      setProjects(showAll ? updatedProjects : updatedProjects.slice(0, 3));
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -23,7 +26,7 @@ const Projects = () => {
     return () => {
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, []);
+  }, [showAll]);
 
   // Handle image load error
   const handleImageError = (projectId) => {
@@ -31,7 +34,7 @@ const Projects = () => {
       ...prev,
       [projectId]: true,
     }));
-    console.error(`Failed to load image for project`);
+    console.error("Failed to load image");
   };
 
   return (
@@ -42,16 +45,17 @@ const Projects = () => {
             Projects
           </h2>
           <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-            My Recent Work
+            {showAll ? "All Projects" : "My Recent Work"}
           </p>
           <p className="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-400 lg:mx-auto">
-            Here are some of the projects I&apos;ve worked on recently. Each
-            project represents a unique challenge and solution.
+            {showAll
+              ? "A comprehensive list of all my projects."
+              : "Here are some of my most recent projects. Each project represents a unique challenge and solution."}
           </p>
         </div>
 
         <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {projects.slice(0, 3).map((project) => (
+          {projects.map((project) => (
             <div
               key={project.id}
               className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg transition-transform duration-300 hover:-translate-y-2"
@@ -122,27 +126,29 @@ const Projects = () => {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <Link
-            href="/projects"
-            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-          >
-            View All Projects
-            <svg
-              className="ml-2 -mr-1 h-5 w-5"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
+        {!showAll && projects.length > 0 && (
+          <div className="mt-12 text-center">
+            <Link
+              href="/projects"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
             >
-              <path
-                fillRule="evenodd"
-                d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </Link>
-        </div>
+              View All Projects
+              <svg
+                className="ml-2 -mr-1 h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   );
