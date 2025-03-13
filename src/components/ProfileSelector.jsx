@@ -22,21 +22,9 @@ const fixImgBBUrl = (url) => {
   return fixedUrl;
 };
 
-/**
- * @typedef {Object} ProfileSelectorProps
- * @property {string} selectedImage - The currently selected image path
- * @property {(imagePath: string) => void} onChange - Callback when image selection changes
- */
-
-/**
- * @param {ProfileSelectorProps} props
- */
-export default function ProfileSelector({
-  selectedImage,
-  onChange,
-}) {
+export default function ProfileSelector({ selectedImage, onChange }) {
   const [availableImages, setAvailableImages] = useState([
-    "/assets/profile/IMG-20240913-WA0023.jpg",
+    "/assets/profile/default-profile.jpg",
   ]);
   const [showSelector, setShowSelector] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
@@ -54,14 +42,13 @@ export default function ProfileSelector({
         );
       }
     }
-  }, []);
+  }, [selectedImage, onChange]);
 
   // Fetch available images when component mounts
   useEffect(() => {
     async function loadImages() {
       setIsLoading(true);
       try {
-        // In a client component, we need to fetch this data from an API
         const response = await fetch("/api/profile-images");
         if (response.ok) {
           const data = await response.json();
@@ -133,7 +120,7 @@ export default function ProfileSelector({
             </div>
           ) : (
             <Image
-              src={selectedImage}
+              src={selectedImage || "/assets/profile/default-profile.jpg"}
               alt="Selected profile image"
               fill
               className="object-cover"
@@ -174,7 +161,7 @@ export default function ProfileSelector({
         </label>
         <input
           type="text"
-          value={selectedImage}
+          value={selectedImage || ""}
           onChange={handleCustomImageUrl}
           className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
           placeholder="/assets/profile/your-image.jpg"
@@ -206,8 +193,8 @@ export default function ProfileSelector({
                   key={index}
                   onClick={() => handleSelectImage(imagePath)}
                   className={`relative h-24 cursor-pointer border-2 rounded-full overflow-hidden ${selectedImage === imagePath
-                    ? "border-indigo-500"
-                    : "border-gray-300 dark:border-gray-700"
+                      ? "border-indigo-500"
+                      : "border-gray-300 dark:border-gray-700"
                     }`}
                 >
                   <Image

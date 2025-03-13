@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from "uuid";
 export async function POST(request) {
   try {
     const formData = await request.formData();
-    // Get the file without type assertion
     const file = formData.get("file");
 
     if (!file) {

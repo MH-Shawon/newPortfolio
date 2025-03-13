@@ -80,7 +80,7 @@ const Navbar = () => {
                 href="/admin/login"
                 className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
               >
-                Login
+                
               </Link>
             )}
           </div>

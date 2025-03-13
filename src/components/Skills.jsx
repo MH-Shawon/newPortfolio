@@ -1,35 +1,58 @@
 "use client";
 
 import { useState } from "react";
+import {
+    FaHtml5,
+    FaCss3Alt,
+    FaJs,
+    FaReact,
+    FaNodeJs,
+    FaGitAlt,
+    FaGithub,
+    FaDocker,
+    FaFigma,
+} from "react-icons/fa";
+import {
+    SiTypescript,
+    SiNextdotjs,
+    SiTailwindcss,
+    SiExpress,
+    SiMongodb,
+    SiPostgresql,
+    SiGraphql,
+    SiVisualstudiocode,
+    SiJest,
+} from "react-icons/si";
+import { TbApi } from "react-icons/tb";
 
 const Skills = () => {
     const [activeTab, setActiveTab] = useState("frontend");
 
     const skills = {
         frontend: [
-            { name: "HTML5", level: 90 },
-            { name: "CSS3", level: 85 },
-            { name: "JavaScript", level: 90 },
-            { name: "TypeScript", level: 85 },
-            { name: "React", level: 90 },
-            { name: "Next.js", level: 85 },
-            { name: "Tailwind CSS", level: 90 },
+            { name: "HTML5", level: 90, icon: FaHtml5, color: "#E34F26" },
+            { name: "CSS3", level: 85, icon: FaCss3Alt, color: "#1572B6" },
+            { name: "JavaScript", level: 90, icon: FaJs, color: "#F7DF1E" },
+            { name: "TypeScript", level: 85, icon: SiTypescript, color: "#3178C6" },
+            { name: "React", level: 90, icon: FaReact, color: "#61DAFB" },
+            { name: "Next.js", level: 85, icon: SiNextdotjs, color: "#000000" },
+            { name: "Tailwind CSS", level: 90, icon: SiTailwindcss, color: "#06B6D4" },
         ],
         backend: [
-            { name: "Node.js", level: 80 },
-            { name: "Express", level: 75 },
-            { name: "MongoDB", level: 70 },
-            { name: "PostgreSQL", level: 65 },
-            { name: "GraphQL", level: 60 },
-            { name: "REST API", level: 85 },
+            { name: "Node.js", level: 80, icon: FaNodeJs, color: "#339933" },
+            { name: "Express", level: 75, icon: SiExpress, color: "#000000" },
+            { name: "MongoDB", level: 70, icon: SiMongodb, color: "#47A248" },
+            { name: "PostgreSQL", level: 65, icon: SiPostgresql, color: "#4169E1" },
+            { name: "GraphQL", level: 60, icon: SiGraphql, color: "#E10098" },
+            { name: "REST API", level: 85, icon: TbApi, color: "#FF6B6B" },
         ],
         tools: [
-            { name: "Git", level: 85 },
-            { name: "GitHub", level: 85 },
-            { name: "VS Code", level: 90 },
-            { name: "Figma", level: 75 },
-            { name: "Docker", level: 60 },
-            { name: "Jest", level: 70 },
+            { name: "Git", level: 85, icon: FaGitAlt, color: "#F05032" },
+            { name: "GitHub", level: 85, icon: FaGithub, color: "#181717" },
+            { name: "VS Code", level: 90, icon: SiVisualstudiocode, color: "#007ACC" },
+            { name: "Figma", level: 75, icon: FaFigma, color: "#F24E1E" },
+            { name: "Docker", level: 60, icon: FaDocker, color: "#2496ED" },
+            { name: "Jest", level: 70, icon: SiJest, color: "#C21325" },
         ],
     };
 
@@ -44,8 +67,8 @@ const Skills = () => {
                         My Technical Expertise
                     </p>
                     <p className="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-400 lg:mx-auto">
-                        I&apos;ve worked with a variety of technologies and tools throughout
-                        my career. Here&apos;s a snapshot of my technical skills.
+                        I&apos;ve worked with a variety of technologies and tools throughout my
+                        career. Here&apos;s a snapshot of my technical skills.
                     </p>
                 </div>
 
@@ -81,26 +104,46 @@ const Skills = () => {
                         </button>
                     </div>
 
-                    {/* Skill bars */}
-                    <div className="mt-8 grid gap-6">
-                        {skills[activeTab].map((skill) => (
-                            <div key={skill.name}>
-                                <div className="flex justify-between items-center mb-1">
-                                    <span className="text-base font-medium text-gray-700 dark:text-gray-300">
-                                        {skill.name}
-                                    </span>
-                                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                        {skill.level}%
-                                    </span>
+                    {/* Skills Grid */}
+                    <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {skills[activeTab].map((skill) => {
+                            const Icon = skill.icon;
+                            return (
+                                <div
+                                    key={skill.name}
+                                    className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300"
+                                >
+                                    <div className="flex items-center space-x-4 mb-4">
+                                        <div
+                                            className="p-3 rounded-lg"
+                                            style={{ backgroundColor: `${skill.color}20` }}
+                                        >
+                                            <Icon
+                                                className="w-6 h-6"
+                                                style={{ color: skill.color }}
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                                {skill.name}
+                                            </h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                Proficiency: {skill.level}%
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                        <div
+                                            className="h-2 rounded-full"
+                                            style={{
+                                                width: `${skill.level}%`,
+                                                backgroundColor: skill.color,
+                                            }}
+                                        ></div>
+                                    </div>
                                 </div>
-                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                                    <div
-                                        className="bg-indigo-600 dark:bg-indigo-400 h-2.5 rounded-full"
-                                        style={{ width: `${skill.level}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -108,4 +151,4 @@ const Skills = () => {
     );
 };
 
-export default Skills; 
+export default Skills;
