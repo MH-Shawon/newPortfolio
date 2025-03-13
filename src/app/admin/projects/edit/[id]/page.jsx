@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import Link from "next/link";
 import AdminHeader from "@/components/AdminHeader";
 import ImageSelector from "@/components/ImageSelector";
+import { use } from "react";
 
 // Function to fix ImgBB URLs
 const fixImgBBUrl = (url) => {
@@ -31,6 +32,7 @@ export default function EditProjectPage({
   params,
 }) {
   const router = useRouter();
+  const resolvedParams = use(params);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -49,7 +51,7 @@ export default function EditProjectPage({
 
   useEffect(() => {
     try {
-      const project = getProjectById(params.id);
+      const project = getProjectById(resolvedParams.id);
       if (project) {
         // Fix ImgBB URL if needed
         const fixedImage = fixImgBBUrl(project.image);
@@ -87,7 +89,7 @@ export default function EditProjectPage({
     } finally {
       setLoading(false);
     }
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   // Fix image URL when it changes
   useEffect(() => {
@@ -154,7 +156,7 @@ export default function EditProjectPage({
       const fixedImage = fixImgBBUrl(formData.image);
 
       // Update the project with fixed image URL
-      updateProject(params.id, {
+      updateProject(resolvedParams.id, {
         ...formData,
         image: fixedImage,
         tags: tagsArray,
@@ -349,7 +351,7 @@ export default function EditProjectPage({
                       name="codeLink"
                       value={formData.codeLink}
                       onChange={handleChange}
-                      required
+
                       placeholder="https://github.com/username/repo"
                       className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                     />
