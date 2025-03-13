@@ -41,7 +41,7 @@ const Contact = () => {
         subject: "",
         message: "",
       });
-    } catch (error) {
+    } catch {
       setSubmitError(
         "There was an error submitting your message. Please try again."
       );
@@ -62,7 +62,7 @@ const Contact = () => {
           </p>
           <p className="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-400 lg:mx-auto">
             Have a project in mind or want to discuss a potential collaboration?
-            I'd love to hear from you!
+            I&apos;d love to hear from you!
           </p>
         </div>
 

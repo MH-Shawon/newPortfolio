@@ -44,8 +44,8 @@ const Skills = () => {
             My Technical Expertise
           </p>
           <p className="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-400 lg:mx-auto">
-            I've worked with a variety of technologies and tools throughout my
-            career. Here's a snapshot of my technical skills.
+            I&apos;ve worked with a variety of technologies and tools throughout
+            my career. Here&apos;s a snapshot of my technical skills.
           </p>
         </div>
 

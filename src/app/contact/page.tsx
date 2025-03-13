@@ -15,7 +15,7 @@ export default function ContactPage() {
               </h1>
               <p className="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-400 lg:mx-auto">
                 Have a project in mind or want to discuss a potential
-                collaboration? I'd love to hear from you!
+                collaboration? I&apos;d love to hear from you!
               </p>
             </div>
           </div>
@@ -82,9 +82,9 @@ export default function ContactPage() {
                 <p className="text-gray-600 dark:text-gray-400">
                   Project timelines depend on scope and complexity. A simple
                   website might take 2-4 weeks, while more complex applications
-                  can take several months. I'll provide a realistic timeline
-                  during our initial discussions and keep you updated throughout
-                  the development process.
+                  can take several months. I&apos;ll provide a realistic
+                  timeline during our initial discussions and keep you updated
+                  throughout the development process.
                 </p>
               </div>
 
