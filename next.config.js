@@ -30,7 +30,7 @@ const nextConfig = {
   },
   // Increase the timeout for API routes
   experimental: {
-    serverExternalPackages: ["axios", "form-data"],
+    // Next.js 15 no longer supports serverExternalPackages
   },
 };
 
