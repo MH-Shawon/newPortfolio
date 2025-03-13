@@ -20,7 +20,7 @@ export function isLoggedIn() {
   try {
     const { expires } = JSON.parse(auth);
     return new Date().getTime() < expires;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -52,7 +52,7 @@ export function getCurrentUser() {
 
     const { email } = JSON.parse(auth);
     return { email };
-  } catch (error) {
+  } catch {
     return null;
   }
 }

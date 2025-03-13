@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import ProfileImageUploader from "./ProfileImageUploader";
 
-// Function to fix ImgBB URLs
+/**
+ * Function to fix ImgBB URLs by correcting common typos and ensuring proper format
+ * @param {string} url - The URL to fix
+ * @returns {string} The fixed URL
+ */
 const fixImgBBUrl = (url) => {
   if (!url) return url;
 
@@ -22,7 +26,13 @@ const fixImgBBUrl = (url) => {
   return fixedUrl;
 };
 
-export default function ProfileSelector({ selectedImage, onChange }) {
+/**
+ * ProfileSelector component for managing profile images
+ * @param {Object} props - Component props
+ * @param {string} props.selectedImage - Currently selected image URL
+ * @param {Function} props.onChange - Callback when image changes
+ */
+const ProfileSelector = ({ selectedImage, onChange }) => {
   const [availableImages, setAvailableImages] = useState([
     "/assets/profile/default-profile.jpg",
   ]);
@@ -212,4 +222,6 @@ export default function ProfileSelector({ selectedImage, onChange }) {
       )}
     </div>
   );
-}
+};
+
+export default ProfileSelector;

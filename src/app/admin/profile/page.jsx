@@ -5,7 +5,7 @@ import { getProfile, updateProfile } from "@/data/profile";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import AdminHeader from "@/components/AdminHeader";
-import ProfileSelector from "@/components/ProfileSelector";
+import ProfileSelector from "../../../components/ProfileSelector";
 
 // Function to fix ImgBB URLs
 const fixImgBBUrl = (url) => {

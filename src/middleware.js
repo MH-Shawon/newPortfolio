@@ -15,8 +15,14 @@ export function middleware(request) {
   // Client-side auth will be handled by the components themselves
   // This middleware will just handle redirects for unauthenticated requests to protected routes
 
-  // For now, we'll allow all requests to proceed
+  // If it's an admin path and not the login page, proceed to the requested page
   // The actual auth check will happen in the client components
+  if (isAdminPath) {
+    // Allow the request to proceed, but the client-side auth will handle protection
+    return NextResponse.next();
+  }
+
+  // For non-admin paths or public paths, just proceed normally
   return NextResponse.next();
 }
 

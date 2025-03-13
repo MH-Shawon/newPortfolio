@@ -5,10 +5,10 @@ import path from "path";
 export async function POST(request) {
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as File;
+    const file = formData.get("file");
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status);
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Check if the file is a PDF
@@ -29,7 +29,7 @@ export async function POST(request) {
 
     // Ensure the directory exists
     if (!fs.existsSync(resumeDir)) {
-      fs.mkdirSync(resumeDir, { recursive);
+      fs.mkdirSync(resumeDir, { recursive: true });
     }
 
     // Write the file to disk
@@ -41,7 +41,7 @@ export async function POST(request) {
       url: "/assets/resume/resume.pdf",
     });
   } catch (error) {
-    console.error("Error uploading resume, error);
+    console.error("Error uploading resume:", error);
     return NextResponse.json(
       { error: "Failed to upload resume" },
       { status: 500 }

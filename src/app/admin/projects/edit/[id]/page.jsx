@@ -103,15 +103,15 @@ export default function EditProjectPage({
     }
   }, [formData.image]);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    const { name, value, type } = e.target as HTMLInputElement;
+  /**
+   * Handle form input changes
+   * @param {Event} e - The change event from the input
+   */
+  const handleChange = (e) => {
+    const { name, value, type } = e.target;
 
     if (type === "checkbox") {
-      const { checked } = e.target as HTMLInputElement;
+      const { checked } = e.target;
       setFormData((prev) => ({
         ...prev,
         [name]: checked,
