@@ -6,14 +6,15 @@ import { v4 as uuidv4 } from "uuid";
 export async function POST(request) {
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as File;
+    // Get the file without type assertion
+    const file = formData.get("file");
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status);
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Check if the file is an image
-    if (!file.type.startsWith("image/")) {
+    if (!file.type?.startsWith("image/")) {
       return NextResponse.json(
         { error: "Only image files are allowed" },
         { status: 400 }
@@ -21,7 +22,7 @@ export async function POST(request) {
     }
 
     // Get file extension
-    const fileExtension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const fileExtension = file.name?.split(".")?.pop()?.toLowerCase() || "jpg";
 
     // Generate a unique filename
     const fileName = `profile-${uuidv4()}.${fileExtension}`;
@@ -36,7 +37,7 @@ export async function POST(request) {
 
     // Ensure the directory exists
     if (!fs.existsSync(profileDir)) {
-      fs.mkdirSync(profileDir, { recursive);
+      fs.mkdirSync(profileDir, { recursive: true });
     }
 
     // Write the file to disk
@@ -48,7 +49,7 @@ export async function POST(request) {
       url: `/assets/profile/${fileName}`,
     });
   } catch (error) {
-    console.error("Error uploading profile image, error);
+    console.error("Error uploading profile image:", error);
     return NextResponse.json(
       { error: "Failed to upload profile image" },
       { status: 500 }

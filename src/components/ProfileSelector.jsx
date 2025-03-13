@@ -5,7 +5,7 @@ import Image from "next/image";
 import ProfileImageUploader from "./ProfileImageUploader";
 
 // Function to fix ImgBB URLs
-const fixImgBBUrl = (url) {
+const fixImgBBUrl = (url) => {
   if (!url) return url;
 
   // Fix common typos in ImgBB URLs
@@ -22,14 +22,19 @@ const fixImgBBUrl = (url) {
   return fixedUrl;
 };
 
-  selectedImage;
-  onChange: (imagePath) => void;
-}
+/**
+ * @typedef {Object} ProfileSelectorProps
+ * @property {string} selectedImage - The currently selected image path
+ * @property {(imagePath: string) => void} onChange - Callback when image selection changes
+ */
 
+/**
+ * @param {ProfileSelectorProps} props
+ */
 export default function ProfileSelector({
   selectedImage,
   onChange,
-}: ProfileSelectorProps) {
+}) {
   const [availableImages, setAvailableImages] = useState([
     "/assets/profile/IMG-20240913-WA0023.jpg",
   ]);
@@ -63,7 +68,7 @@ export default function ProfileSelector({
           setAvailableImages(data.images);
         }
       } catch (error) {
-        console.error("Failed to load profile images, error);
+        console.error("Failed to load profile images", error);
       } finally {
         setIsLoading(false);
       }
@@ -104,7 +109,7 @@ export default function ProfileSelector({
   // Handle image load error
   const handleImageError = () => {
     setImageError(true);
-    console.error(`Failed to load image);
+    console.error("Failed to load image");
   };
 
   // Handle image upload
@@ -200,11 +205,10 @@ export default function ProfileSelector({
                 <div
                   key={index}
                   onClick={() => handleSelectImage(imagePath)}
-                  className={`relative h-24 cursor-pointer border-2 rounded-full overflow-hidden ${
-                    selectedImage === imagePath
-                      ? "border-indigo-500"
-                      : "border-gray-300 dark:border-gray-700"
-                  }`}
+                  className={`relative h-24 cursor-pointer border-2 rounded-full overflow-hidden ${selectedImage === imagePath
+                    ? "border-indigo-500"
+                    : "border-gray-300 dark:border-gray-700"
+                    }`}
                 >
                   <Image
                     src={imagePath}

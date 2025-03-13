@@ -2,12 +2,17 @@
 
 import { useState, useRef } from "react";
 
-  onImageUploaded: (imageUrl) => void;
-}
+/**
+ * @typedef {Object} ProfileImageUploaderProps
+ * @property {(imageUrl: string) => void} onImageUploaded - Callback when image is uploaded
+ */
 
+/**
+ * @param {ProfileImageUploaderProps} props
+ */
 export default function ProfileImageUploader({
-  onImageUploaded,
-}: ProfileImageUploaderProps) {
+  onImageUploaded
+}) {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);

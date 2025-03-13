@@ -11,14 +11,14 @@ const Projects = ({ showAll = false }) => {
 
   // Load projects when component mounts and when localStorage changes
   useEffect(() => {
-    const allProjects = getAllProjects();
+    const allProjects = getAllProjects() || [];
     // If not showing all, only show the 3 most recent projects
-    setProjects(showAll ? allProjects : allProjects.slice(0, 3));
+    setProjects(Array.isArray(allProjects) ? (showAll ? allProjects : allProjects.slice(0, 3)) : []);
 
     // Listen for storage events to update projects when they change in another tab
     const handleStorageChange = () => {
-      const updatedProjects = getAllProjects();
-      setProjects(showAll ? updatedProjects : updatedProjects.slice(0, 3));
+      const updatedProjects = getAllProjects() || [];
+      setProjects(Array.isArray(updatedProjects) ? (showAll ? updatedProjects : updatedProjects.slice(0, 3)) : []);
     };
 
     window.addEventListener("storage", handleStorageChange);
