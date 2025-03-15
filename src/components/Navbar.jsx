@@ -183,7 +183,7 @@ const Navbar = () => {
                 href="/admin/login"
                 className="block px-3 py-2 rounded-md text-base font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                Login
+                
               </Link>
             )}
           </div>
