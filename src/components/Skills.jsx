@@ -77,28 +77,31 @@ const Skills = () => {
                     <div className="flex justify-center border-b border-gray-200 dark:border-gray-700">
                         <button
                             onClick={() => setActiveTab("frontend")}
-                            className={`px-6 py-3 text-base font-medium ${activeTab === "frontend"
+                            className={`px-6 py-3 text-base font-medium ${
+                                activeTab === "frontend"
                                     ? "border-b-2 border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400"
                                     : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                                }`}
+                            }`}
                         >
                             Frontend
                         </button>
                         <button
                             onClick={() => setActiveTab("backend")}
-                            className={`px-6 py-3 text-base font-medium ${activeTab === "backend"
+                            className={`px-6 py-3 text-base font-medium ${
+                                activeTab === "backend"
                                     ? "border-b-2 border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400"
                                     : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                                }`}
+                            }`}
                         >
                             Backend
                         </button>
                         <button
                             onClick={() => setActiveTab("tools")}
-                            className={`px-6 py-3 text-base font-medium ${activeTab === "tools"
+                            className={`px-6 py-3 text-base font-medium ${
+                                activeTab === "tools"
                                     ? "border-b-2 border-indigo-600 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400"
                                     : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                                }`}
+                            }`}
                         >
                             Tools
                         </button>
@@ -108,6 +111,7 @@ const Skills = () => {
                     <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {skills[activeTab].map((skill) => {
                             const Icon = skill.icon;
+                            if (!Icon) return null; // Add a check for undefined icons
                             return (
                                 <div
                                     key={skill.name}
