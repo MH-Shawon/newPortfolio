@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { login, isAdmin } from "@/data/auth";
+import { login, isLoggedIn } from "@/data/auth";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
@@ -19,7 +19,7 @@ export default function LoginPage() {
 
   // Check if already logged in
   useEffect(() => {
-    if (isAdmin()) {
+    if (isLoggedIn()) {
       router.push("/admin");
     }
   }, [router]);
