@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { isLoggedIn } from "@/data/auth";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     // Check if user is logged in
@@ -15,6 +17,27 @@ const Navbar = () => {
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const isActive = (path) => {
+    if (path === "/" && pathname !== "/") return false;
+    return pathname.startsWith(path);
+  };
+
+  const linkStyles = (path) => {
+    const baseStyles = "transition-colors";
+    const desktopStyles = isActive(path)
+      ? "text-indigo-600 dark:text-indigo-400 font-semibold"
+      : "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white";
+    return `${baseStyles} ${desktopStyles}`;
+  };
+
+  const mobileLinkStyles = (path) => {
+    const baseStyles = "block px-3 py-2 rounded-md text-base font-medium transition-colors";
+    const mobileStyles = isActive(path)
+      ? "text-indigo-600 dark:text-indigo-400 bg-gray-50 dark:bg-gray-800 font-semibold"
+      : "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800";
+    return `${baseStyles} ${mobileStyles}`;
   };
 
   return (
@@ -32,54 +55,30 @@ const Navbar = () => {
 
           {/* Desktop menu */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link
-              href="/"
-              className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
+            <Link href="/" className={linkStyles("/")}>
               Home
             </Link>
-            <Link
-              href="/about"
-              className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
+            <Link href="/about" className={linkStyles("/about")}>
               About
             </Link>
-            <Link
-              href="/skills"
-              className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
+            <Link href="/skills" className={linkStyles("/skills")}>
               Skills
             </Link>
-            <Link
-              href="/projects"
-              className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
+            <Link href="/projects" className={linkStyles("/projects")}>
               Projects
             </Link>
-            <Link
-              href="/resume"
-              className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
+            <Link href="/resume" className={linkStyles("/resume")}>
               Resume
             </Link>
-            <Link
-              href="/contact"
-              className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
+            <Link href="/contact" className={linkStyles("/contact")}>
               Contact
             </Link>
             {isUserLoggedIn ? (
-              <Link
-                href="/admin"
-                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
-              >
+              <Link href="/admin" className={linkStyles("/admin")}>
                 Admin
               </Link>
             ) : (
-              <Link
-                href="/admin/login"
-                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
-              >
+              <Link href="/admin/login" className={linkStyles("/admin/login")}>
                 
               </Link>
             )}
@@ -135,54 +134,30 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white dark:bg-black">
-            <Link
-              href="/"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
+            <Link href="/" className={mobileLinkStyles("/")}>
               Home
             </Link>
-            <Link
-              href="/about"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
+            <Link href="/about" className={mobileLinkStyles("/about")}>
               About
             </Link>
-            <Link
-              href="/skills"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
+            <Link href="/skills" className={mobileLinkStyles("/skills")}>
               Skills
             </Link>
-            <Link
-              href="/projects"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
+            <Link href="/projects" className={mobileLinkStyles("/projects")}>
               Projects
             </Link>
-            <Link
-              href="/resume"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
+            <Link href="/resume" className={mobileLinkStyles("/resume")}>
               Resume
             </Link>
-            <Link
-              href="/contact"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            >
+            <Link href="/contact" className={mobileLinkStyles("/contact")}>
               Contact
             </Link>
             {isUserLoggedIn ? (
-              <Link
-                href="/admin"
-                className="block px-3 py-2 rounded-md text-base font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
+              <Link href="/admin" className={mobileLinkStyles("/admin")}>
                 Admin
               </Link>
             ) : (
-              <Link
-                href="/admin/login"
-                className="block px-3 py-2 rounded-md text-base font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
+              <Link href="/admin/login" className={mobileLinkStyles("/admin/login")}>
                 
               </Link>
             )}

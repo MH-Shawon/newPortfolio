@@ -20,10 +20,10 @@ import {
     SiMongodb,
     SiPostgresql,
     SiGraphql,
-    SiVisualstudiocode,
     SiJest,
 } from "react-icons/si";
 import { TbApi } from "react-icons/tb";
+import { VscVscode } from "react-icons/vsc";
 
 const Skills = () => {
     const [activeTab, setActiveTab] = useState("frontend");
@@ -49,8 +49,8 @@ const Skills = () => {
         tools: [
             { name: "Git", level: 85, icon: FaGitAlt, color: "#F05032" },
             { name: "GitHub", level: 85, icon: FaGithub, color: "#181717" },
-            { name: "VS Code", level: 90, icon: SiVisualstudiocode, color: "#007ACC" },
-            { name: "Figma", level: 75, icon: FaFigma, color: "#F24E1E" },
+            { name: "VS Code", level: 90, icon: VscVscode, color: "#007ACC" },
+            { name: "Figma", level: 90, icon: FaFigma, color: "#F24E1E" },
             { name: "Docker", level: 60, icon: FaDocker, color: "#2496ED" },
             { name: "Jest", level: 70, icon: SiJest, color: "#C21325" },
         ],
