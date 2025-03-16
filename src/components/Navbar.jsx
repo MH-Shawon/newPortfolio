@@ -49,7 +49,7 @@ const Navbar = () => {
               href="/"
               className="text-xl font-bold text-gray-900 dark:text-white"
             >
-              Portfolio
+              MH.
             </Link>
           </div>
 

@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Developer Portfolio",
+  title: "Mohsin Hossain",
   description: "A showcase of my work and skills as a web developer",
   keywords: [
     "web developer",
