@@ -25,7 +25,6 @@ export async function GET() {
 
     return NextResponse.json({ images: imageFiles });
   } catch (error) {
-    console.error("Error listing profile images:", error);
     return NextResponse.json(
       { error: "Failed to list profile images" },
       { status: 500 }

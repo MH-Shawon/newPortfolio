@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { addProject } from "@/data/projects";
+// Removed: import { addProject } from "@/data/projects";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import AdminHeader from "@/components/AdminHeader";
 import ImageSelector from "@/components/ImageSelector";
+import { useRouter } from "next/navigation";
+import config from "@/config";
 
 // Function to fix ImgBB URLs
 const fixImgBBUrl = (url) => {
@@ -41,6 +43,7 @@ export default function AdminPage() {
   });
 
   const [message, setMessage] = useState({ text: "", type: "" });
+  const router = useRouter();
 
   // Fix image URL when component mounts or when image changes
   useEffect(() => {
@@ -51,7 +54,6 @@ export default function AdminPage() {
           ...prev,
           image: fixedUrl,
         }));
-        console.log("Fixed ImgBB URL");
       }
     }
   }, [formData.image]);
@@ -81,40 +83,42 @@ export default function AdminPage() {
       ...prev,
       image: fixedImagePath,
     }));
-
-    if (fixedImagePath !== imagePath) {
-      console.log(
-        "Fixed ImgBB URL on image change:", imagePath, "->", fixedImagePath
-      );
-    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Convert tags string to array
       const tagsArray = formData.tags
         .split(",")
         .map((tag) => tag.trim())
         .filter((tag) => tag !== "");
 
-      // Fix ImgBB URL if needed
       const fixedImage = fixImgBBUrl(formData.image);
 
-      // Add the new project with fixed image URL
-      const newProject = addProject({
+      const projectData = {
         ...formData,
         image: fixedImage,
         tags: tagsArray,
+      };
+
+      const response = await fetch(`${config.apiUrl}/api/projects`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(projectData),
       });
 
-      // Trigger storage event to notify other components
-      window.dispatchEvent(new Event("storage"));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
 
-      // Show success message
+      const newProject = await response.json();
+
       setMessage({
-        text: "Project \"" + newProject.title + "\" added successfully!",
+        text: `Project "${newProject.title}" added successfully!`,
         type: "success",
       });
 
@@ -132,14 +136,13 @@ export default function AdminPage() {
         solutions: "",
       });
 
-      // Clear message after 3 seconds
+      // Redirect to projects page after 2 seconds
       setTimeout(() => {
-        setMessage({ text: "", type: "" });
-      }, 3000);
+        router.push("/admin/projects");
+      }, 2000);
     } catch (error) {
-      // Show error message
       setMessage({
-        text: "Error adding project: " + (error instanceof Error ? error.message : "Unknown error"),
+        text: `Error adding project: ${error instanceof Error ? error.message : "Unknown error"}`,
         type: "error",
       });
     }
@@ -179,198 +182,193 @@ export default function AdminPage() {
               </Link>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
-              {message.text && (
-                <div
-                  className={"mb-6 p-4 rounded-md " +
-                    (message.type === "success"
-                      ? "bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-200"
-                      : "bg-red-50 dark:bg-red-900 text-red-800 dark:text-red-200")
-                  }
+            {message.text && (
+              <div
+                className={`mb-6 p-4 rounded-md ${message.type === "success"
+                  ? "bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-200"
+                  : "bg-red-50 dark:bg-red-900 text-red-800 dark:text-red-200"
+                  }`}
+              >
+                {message.text}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8 space-y-6">
+              <div>
+                <label
+                  htmlFor="title"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  {message.text}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label
-                    htmlFor="title"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="description"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Short Description *
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    rows={3}
-                    value={formData.description}
-                    onChange={handleChange}
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  ></textarea>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="longDescription"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Long Description
-                  </label>
-                  <textarea
-                    id="longDescription"
-                    name="longDescription"
-                    rows={5}
-                    value={formData.longDescription}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  ></textarea>
-                </div>
-
-                <ImageSelector
-                  selectedImage={formData.image}
-                  onChange={handleImageChange}
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                 />
+              </div>
+              <div>
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Short Description *
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  required
+                  rows={3}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                ></textarea>
+              </div>
+              <div>
+                <label
+                  htmlFor="longDescription"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Long Description
+                </label>
+                <textarea
+                  id="longDescription"
+                  name="longDescription"
+                  value={formData.longDescription}
+                  onChange={handleChange}
+                  rows={6}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                ></textarea>
+              </div>
+              <div>
+                <label
+                  htmlFor="image"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Image URL *
+                </label>
+                <input
+                  type="text"
+                  id="image"
+                  name="image"
+                  value={formData.image}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                />
+                <ImageSelector onImageSelect={handleImageChange} currentImage={formData.image} />
+              </div>
+              <div>
+                <label
+                  htmlFor="tags"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Tags (comma-separated) *
+                </label>
+                <input
+                  type="text"
+                  id="tags"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleChange}
+                  required
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="demoLink"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Demo Link
+                </label>
+                <input
+                  type="url"
+                  id="demoLink"
+                  name="demoLink"
+                  value={formData.demoLink}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="codeLink"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Code Link
+                </label>
+                <input
+                  type="url"
+                  id="codeLink"
+                  name="codeLink"
+                  value={formData.codeLink}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="challenges"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Challenges
+                </label>
+                <textarea
+                  id="challenges"
+                  name="challenges"
+                  value={formData.challenges}
+                  onChange={handleChange}
+                  rows={3}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                ></textarea>
+              </div>
+              <div>
+                <label
+                  htmlFor="solutions"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Solutions
+                </label>
+                <textarea
+                  id="solutions"
+                  name="solutions"
+                  value={formData.solutions}
+                  onChange={handleChange}
+                  rows={3}
+                  className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                ></textarea>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="featured"
+                  name="featured"
+                  checked={formData.featured}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label
+                  htmlFor="featured"
+                  className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                >
+                  Featured Project
+                </label>
+              </div>
 
-                <div>
-                  <label
-                    htmlFor="tags"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Tags * (comma separated)
-                  </label>
-                  <input
-                    type="text"
-                    id="tags"
-                    name="tags"
-                    value={formData.tags}
-                    onChange={handleChange}
-                    required
-                    placeholder="Next.js, React, Tailwind CSS"
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label
-                      htmlFor="demoLink"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Demo Link *
-                    </label>
-                    <input
-                      type="url"
-                      id="demoLink"
-                      name="demoLink"
-                      value={formData.demoLink}
-                      onChange={handleChange}
-                      required
-                      placeholder="https://example.com"
-                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="codeLink"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Code Link *
-                    </label>
-                    <input
-                      type="url"
-                      id="codeLink"
-                      name="codeLink"
-                      value={formData.codeLink}
-                      onChange={handleChange}
-                      required
-                      placeholder="https://github.com/username/repo"
-                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="challenges"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Challenges
-                  </label>
-                  <textarea
-                    id="challenges"
-                    name="challenges"
-                    rows={3}
-                    value={formData.challenges}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  ></textarea>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="solutions"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Solutions
-                  </label>
-                  <textarea
-                    id="solutions"
-                    name="solutions"
-                    rows={3}
-                    value={formData.solutions}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  ></textarea>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="featured"
-                    name="featured"
-                    checked={formData.featured}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
-                  <label
-                    htmlFor="featured"
-                    className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-                  >
-                    Featured Project
-                  </label>
-                </div>
-
-                <div>
-                  <button
-                    type="submit"
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Add Project
-                  </button>
-                </div>
-              </form>
-            </div>
+              <div>
+                <button
+                  type="submit"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Add Project
+                </button>
+              </div>
+            </form>
           </div>
         </section>
       </main>

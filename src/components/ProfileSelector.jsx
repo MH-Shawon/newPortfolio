@@ -47,9 +47,6 @@ const ProfileSelector = ({ selectedImage, onChange }) => {
       const fixedUrl = fixImgBBUrl(selectedImage);
       if (fixedUrl !== selectedImage) {
         onChange(fixedUrl);
-        console.log(
-          `Fixed ImgBB URL on mount: ${selectedImage} -> ${fixedUrl}`
-        );
       }
     }
   }, [selectedImage, onChange]);
@@ -65,7 +62,7 @@ const ProfileSelector = ({ selectedImage, onChange }) => {
           setAvailableImages(data.images);
         }
       } catch (error) {
-        console.error("Failed to load profile images", error);
+        setImages([]);
       } finally {
         setIsLoading(false);
       }
@@ -82,12 +79,6 @@ const ProfileSelector = ({ selectedImage, onChange }) => {
     const fixedImagePath = fixImgBBUrl(imagePath);
     onChange(fixedImagePath);
     setShowSelector(false);
-
-    if (fixedImagePath !== imagePath) {
-      console.log(
-        `Fixed ImgBB URL on selection: ${imagePath} -> ${fixedImagePath}`
-      );
-    }
   };
 
   // Function to handle custom image URL input
@@ -95,18 +86,11 @@ const ProfileSelector = ({ selectedImage, onChange }) => {
     setImageError(false);
     const fixedImagePath = fixImgBBUrl(e.target.value);
     onChange(fixedImagePath);
-
-    if (fixedImagePath !== e.target.value) {
-      console.log(
-        `Fixed ImgBB URL on input: ${e.target.value} -> ${fixedImagePath}`
-      );
-    }
   };
 
   // Handle image load error
   const handleImageError = () => {
     setImageError(true);
-    console.error("Failed to load image");
   };
 
   // Handle image upload
@@ -203,8 +187,8 @@ const ProfileSelector = ({ selectedImage, onChange }) => {
                   key={index}
                   onClick={() => handleSelectImage(imagePath)}
                   className={`relative h-24 cursor-pointer border-2 rounded-full overflow-hidden ${selectedImage === imagePath
-                      ? "border-indigo-500"
-                      : "border-gray-300 dark:border-gray-700"
+                    ? "border-indigo-500"
+                    : "border-gray-300 dark:border-gray-700"
                     }`}
                 >
                   <Image

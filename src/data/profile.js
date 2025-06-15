@@ -23,7 +23,7 @@ if (typeof window !== "undefined") {
     try {
       profileData = JSON.parse(savedProfile);
     } catch (error) {
-      console.error("Error parsing saved profile data:", error);
+      // Keep the existing profileData
     }
   }
 }

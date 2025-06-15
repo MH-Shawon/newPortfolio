@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import ImageUploader from "./ImageUploader";
 
-export default function ImageSelector({ selectedImage, onChange }) {
+export default function ImageSelector({ currentImage, onImageSelect }) {
   const [availableImages, setAvailableImages] = useState([
     "/assets/projects/Screenshot from 2025-03-13 01-38-53.png",
     "/assets/projects/Screenshot from 2025-03-13 01-40-31.png",
@@ -17,6 +17,7 @@ export default function ImageSelector({ selectedImage, onChange }) {
 
   // Function to fix ImgBB URL if it has typos
   const fixImgBBUrl = (url) => {
+    if (!url) return url; // Handle null/undefined url input
     // Fix common typos in ImgBB URLs
     if (url.includes("i.ibb.co.com")) {
       return url.replace("i.ibb.co.com", "i.ibb.co");
@@ -27,12 +28,13 @@ export default function ImageSelector({ selectedImage, onChange }) {
     return url;
   };
 
-  // Fix the selected image URL if needed
+  // Fix the current image URL if needed and reset imageError when currentImage changes
   useEffect(() => {
-    if (selectedImage && selectedImage.includes("i.ibb.co.com")) {
-      onChange(fixImgBBUrl(selectedImage));
+    if (currentImage && currentImage.includes("i.ibb.co.com")) {
+      onImageSelect(fixImgBBUrl(currentImage));
     }
-  }, [selectedImage, onChange]);
+    setImageError(false); // Reset error state whenever currentImage changes
+  }, [currentImage, onImageSelect]);
 
   // Fetch available images when component mounts
   useEffect(() => {
@@ -40,7 +42,6 @@ export default function ImageSelector({ selectedImage, onChange }) {
       setIsLoading(true);
       setError(null);
       try {
-        // In a client component, we need to fetch this data from an API
         const response = await fetch("/api/project-images");
         if (response.ok) {
           const data = await response.json();
@@ -51,24 +52,21 @@ export default function ImageSelector({ selectedImage, onChange }) {
           ) {
             setAvailableImages(data.images);
           } else {
-            console.warn("No images returned from API or invalid format", data);
+            setImages([]);
+            return;
           }
         } else {
           setError(
             `Failed to load images: ${response.status} ${response.statusText}`
           );
-          console.error(
-            "Failed to load project images:",
-            response.status,
-            response.statusText
-          );
+          setImages([]);
         }
       } catch (error) {
         setError(
           `Error loading images: ${error instanceof Error ? error.message : "Unknown error"
           }`
         );
-        console.error("Failed to load project images:", error);
+        setImages([]);
       } finally {
         setIsLoading(false);
       }
@@ -81,27 +79,29 @@ export default function ImageSelector({ selectedImage, onChange }) {
 
   // Function to handle image selection
   const handleSelectImage = (imagePath) => {
-    onChange(imagePath);
+    onImageSelect(imagePath);
     setShowSelector(false);
   };
 
   // Function to handle custom image URL input
   const handleCustomImageUrl = (e) => {
     const url = e.target.value;
-    onChange(url.includes("i.ibb.co.com") ? fixImgBBUrl(url) : url);
+    onImageSelect(url ? fixImgBBUrl(url) : ""); // Ensure url is not null/undefined before checking includes, return empty string for empty input
   };
 
   // Function to handle image upload
   const handleImageUploaded = (imageUrl) => {
-    onChange(imageUrl);
+    onImageSelect(imageUrl);
     setShowUploader(false);
   };
 
   // Handle image load error
   const handleImageError = () => {
     setImageError(true);
-    console.error("Failed to load image:", selectedImage);
   };
+
+  // Ensure image source is always a valid string. If currentImage is falsy, set imageSrc to null.
+  const imageSrc = currentImage || null; // Use null instead of empty string for better conditional rendering
 
   return (
     <div className="space-y-4">
@@ -111,13 +111,13 @@ export default function ImageSelector({ selectedImage, onChange }) {
 
       <div className="flex items-center space-x-4">
         <div className="relative h-24 w-24 border border-gray-300 dark:border-gray-700 rounded-md overflow-hidden">
-          {imageError ? (
+          {imageError || !imageSrc ? ( // Show placeholder if imageSrc is null/falsy or error occurred
             <div className="flex items-center justify-center h-full w-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs text-center p-1">
-              Image failed to load
+              No image selected or failed to load.
             </div>
           ) : (
             <Image
-              src={selectedImage}
+              src={imageSrc}
               alt="Selected project image"
               fill
               className="object-cover"
@@ -158,7 +158,7 @@ export default function ImageSelector({ selectedImage, onChange }) {
         </label>
         <input
           type="text"
-          value={selectedImage}
+          value={imageSrc || ""}
           onChange={handleCustomImageUrl}
           className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
           placeholder="/assets/projects/your-image.jpg or https://i.ibb.co/..."
@@ -193,18 +193,24 @@ export default function ImageSelector({ selectedImage, onChange }) {
                 <div
                   key={index}
                   onClick={() => handleSelectImage(imagePath)}
-                  className={`relative h-24 cursor-pointer border-2 rounded-md overflow-hidden ${selectedImage === imagePath
+                  className={`relative h-24 cursor-pointer border-2 rounded-md overflow-hidden ${imageSrc === imagePath
                     ? "border-indigo-500"
                     : "border-gray-300 dark:border-gray-700"
                     }`}
                 >
-                  <Image
-                    src={imagePath}
-                    alt={`Project image ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    unoptimized={true}
-                  />
+                  {imagePath ? (
+                    <Image
+                      src={imagePath}
+                      alt={`Gallery image ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      unoptimized={true}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full w-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs text-center p-1">
+                      Missing image
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

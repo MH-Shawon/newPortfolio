@@ -2,30 +2,35 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { getAllProjects } from "@/data/projects";
 import { useState, useEffect } from "react";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import config from "@/config";
 
 const Projects = ({ showAll = false }) => {
   const [projects, setProjects] = useState([]);
   const [imageErrors, setImageErrors] = useState({});
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.3 });
 
-  // Load projects when component mounts and when localStorage changes
+  // Load projects when component mounts
   useEffect(() => {
-    const allProjects = getAllProjects() || [];
-    // If not showing all, only show the 3 most recent projects
-    setProjects(Array.isArray(allProjects) ? (showAll ? allProjects : allProjects.slice(0, 3)) : []);
-
-    // Listen for storage events to update projects when they change in another tab
-    const handleStorageChange = () => {
-      const updatedProjects = getAllProjects() || [];
-      setProjects(Array.isArray(updatedProjects) ? (showAll ? updatedProjects : updatedProjects.slice(0, 3)) : []);
+    const fetchProjects = async () => {
+      try {
+        const response = await fetch(`${config.apiUrl}/api/projects`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        // If not showing all, only show the 3 most recent projects
+        setProjects(showAll ? data : data.slice(0, 3));
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+        setProjects([]);
+      }
     };
 
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
+    fetchProjects();
   }, [showAll]);
 
   // Handle image load error
@@ -34,100 +39,186 @@ const Projects = ({ showAll = false }) => {
       ...prev,
       [projectId]: true,
     }));
-    console.error("Failed to load image");
+  };
+
+  // Animation variants for header elements
+  const headerVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const titleVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        delay: 0.2,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const descriptionVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        delay: 0.4,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  // Animation variants for project cards
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.3, // Increased delay between each project
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.7,
+        ease: "easeOut",
+      },
+    },
   };
 
   return (
-    <section id="projects" className="py-16 bg-gray-50 dark:bg-gray-900">
+    <section id="projects" className="py-16 bg-gray-50 dark:bg-gray-900" ref={ref}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="lg:text-center">
-          <h2 className="text-base text-indigo-600 dark:text-indigo-400 font-semibold tracking-wide uppercase">
+          <motion.h2
+            variants={headerVariants}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            className="text-base text-indigo-600 dark:text-indigo-400 font-semibold tracking-wide uppercase"
+          >
             Projects
-          </h2>
-          <p className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+          </motion.h2>
+          <motion.p
+            variants={titleVariants}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl"
+          >
             {showAll ? "All Projects" : "My Recent Work"}
-          </p>
-          <p className="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-400 lg:mx-auto">
+          </motion.p>
+          <motion.p
+            variants={descriptionVariants}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            className="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-400 lg:mx-auto"
+          >
             {showAll
               ? "A comprehensive list of all my projects."
               : "Here are some of my most recent projects. Each project represents a unique challenge and solution."}
-          </p>
+          </motion.p>
         </div>
 
-        <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <div
-              key={project.id}
-              className="bg-white dark:bg-gray-800 overflow-hidden shadow-lg rounded-lg transition-transform duration-300 hover:-translate-y-2"
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate={isInView ? "visible" : "hidden"}
+          className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {projects.map((project, index) => (
+            <motion.div
+              key={project._id}
+              variants={itemVariants}
+              whileHover={{
+                scale: 1.03,
+                transition: { duration: 0.2 }
+              }}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden"
             >
-              <div className="relative h-48 w-full bg-gray-300 dark:bg-gray-700">
-                {imageErrors[project.id] ? (
-                  <div className="flex items-center justify-center h-full w-full text-gray-500 dark:text-gray-400 text-sm">
-                    <span>Image not available</span>
-                  </div>
-                ) : (
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    fill
-                    className="object-cover"
-                    unoptimized={true}
-                    onError={() => handleImageError(project.id)}
-                  />
-                )}
+              <div className="relative h-48 w-full">
+                <Image
+                  src={imageErrors[project._id] ? "/assets/placeholder.png" : project.image}
+                  alt={project.title}
+                  fill
+                  className="object-cover"
+                  onError={() => handleImageError(project._id)}
+                />
               </div>
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                   {project.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                <p className="mt-2 text-gray-600 dark:text-gray-300">
                   {project.description}
                 </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {project.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 text-xs font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 rounded-full"
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {project.tags.map((tag) => (
+                    <motion.span
+                      key={tag}
+                      whileHover={{ scale: 1.1 }}
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200"
                     >
                       {tag}
-                    </span>
+                    </motion.span>
                   ))}
                 </div>
-                <div className="flex space-x-4">
-                  <a
-                    href={project.demoLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
-                  >
-                    Live Demo
-                  </a>
-                  <a
-                    href={project.codeLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
-                  >
-                    View Code
-                  </a>
-                </div>
-                {project.featured && (
-                  <div className="mt-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      Featured
-                    </span>
+                <div className="mt-4 flex justify-between items-center">
+                  <div className="flex space-x-4">
+                    {project.demoLink && (
+                      <motion.a
+                        href={project.demoLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.1 }}
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
+                      >
+                        Demo
+                      </motion.a>
+                    )}
+                    {project.codeLink && (
+                      <motion.a
+                        href={project.codeLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.1 }}
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
+                      >
+                        Code
+                      </motion.a>
+                    )}
                   </div>
-                )}
-                <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                  {new Date(project.createdAt).toLocaleDateString()}
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(project.createdAt).toLocaleDateString()}
+                  </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {!showAll && projects.length > 0 && (
-          <div className="mt-12 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ delay: 1.2 }} // Increased delay to appear after all projects
+            className="mt-12 text-center"
+          >
             <Link
               href="/projects"
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
@@ -147,7 +238,7 @@ const Projects = ({ showAll = false }) => {
                 />
               </svg>
             </Link>
-          </div>
+          </motion.div>
         )}
       </div>
     </section>

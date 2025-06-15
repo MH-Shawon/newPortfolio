@@ -2,37 +2,28 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getProjectById, updateProject } from "@/data/projects";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import AdminHeader from "@/components/AdminHeader";
 import ImageSelector from "@/components/ImageSelector";
-import { use } from "react";
+import config from "@/config";
 
 // Function to fix ImgBB URLs
 const fixImgBBUrl = (url) => {
   if (!url) return url;
-
-  // Fix common typos in ImgBB URLs
-  let fixedUrl = url;
-
-  // Fix i.ibb.co.com to i.ibb.co
-  fixedUrl = fixedUrl.replace(/i\.ibb\.co\.com/g, "i.ibb.co");
-
-  // Fix other potential issues with ImgBB URLs
-  if (fixedUrl.includes("ibb.co") && !fixedUrl.startsWith("http")) {
-    fixedUrl = "https://" + fixedUrl;
+  if (url.includes("i.ibb.co.com")) {
+    return url.replace("i.ibb.co.com", "i.ibb.co");
   }
-
-  return fixedUrl;
+  if (url.includes("ibb.co.com")) {
+    return url.replace("ibb.co.com", "ibb.co");
+  }
+  return url;
 };
 
-export default function EditProjectPage({
-  params,
-}) {
+export default function EditProjectPage({ params }) {
   const router = useRouter();
-  const resolvedParams = use(params);
+  const projectId = params.id;
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -49,47 +40,55 @@ export default function EditProjectPage({
   const [message, setMessage] = useState({ text: "", type: "" });
   const [loading, setLoading] = useState(true);
 
+  // Fetch project data from backend
   useEffect(() => {
-    try {
-      const project = getProjectById(resolvedParams.id);
-      if (project) {
-        // Fix ImgBB URL if needed
-        const fixedImage = fixImgBBUrl(project.image);
-
-        setFormData({
-          title: project.title,
-          description: project.description,
-          longDescription: project.longDescription || "",
-          image: fixedImage,
-          tags: project.tags.join(", "),
-          demoLink: project.demoLink,
-          codeLink: project.codeLink,
-          featured: project.featured,
-          challenges: project.challenges || "",
-          solutions: project.solutions || "",
-        });
-
-        if (fixedImage !== project.image) {
-          console.log(
-            "Fixed ImgBB URL on load: " + project.image + " -> " + fixedImage
-          );
+    const fetchProject = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${config.apiUrl}/api/projects/${projectId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      } else {
+        const project = await response.json();
+
+        if (project) {
+          // Ensure project.image is a string before passing to fixImgBBUrl
+          const imageFromProject = project.image || "";
+          const fixedImage = fixImgBBUrl(imageFromProject);
+
+          setFormData({
+            title: project.title || "",
+            description: project.description || "",
+            longDescription: project.longDescription || "",
+            image: fixedImage,
+            tags: Array.isArray(project.tags) ? project.tags.join(", ") : "",
+            demoLink: project.demoLink || "",
+            codeLink: project.codeLink || "",
+            featured: project.featured || false,
+            challenges: project.challenges || "",
+            solutions: project.solutions || "",
+          });
+        } else {
+          setMessage({
+            text: "Project not found",
+            type: "error",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch project:", error);
         setMessage({
-          text: "Project not found",
+          text: `Error loading project: ${error instanceof Error ? error.message : "Unknown error"}`,
           type: "error",
         });
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      setMessage({
-        text: `Error loading project: ${error instanceof Error ? error.message : "Unknown error"
-          }`,
-        type: "error",
-      });
-    } finally {
-      setLoading(false);
+    };
+
+    if (projectId) {
+      fetchProject();
     }
-  }, [resolvedParams.id]);
+  }, [projectId]);
 
   // Fix image URL when it changes
   useEffect(() => {
@@ -100,7 +99,6 @@ export default function EditProjectPage({
           ...prev,
           image: fixedUrl,
         }));
-        console.log("Fixed ImgBB URL");
       }
     }
   }, [formData.image]);
@@ -127,59 +125,57 @@ export default function EditProjectPage({
   };
 
   const handleImageChange = (imagePath) => {
-    // Fix ImgBB URL if needed
     const fixedImagePath = fixImgBBUrl(imagePath);
-
     setFormData((prev) => ({
       ...prev,
       image: fixedImagePath,
     }));
-
-    if (fixedImagePath !== imagePath) {
-      console.log(
-        "Fixed ImgBB URL on image change: " + imagePath + " -> " + fixedImagePath
-      );
-    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      // Convert tags string to array
       const tagsArray = formData.tags
         .split(",")
         .map((tag) => tag.trim())
         .filter((tag) => tag !== "");
 
-      // Fix ImgBB URL if needed
       const fixedImage = fixImgBBUrl(formData.image);
 
-      // Update the project with fixed image URL
-      updateProject(resolvedParams.id, {
+      const projectData = {
         ...formData,
         image: fixedImage,
         tags: tagsArray,
+      };
+
+      const response = await fetch(`${config.apiUrl}/api/projects/${projectId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(projectData),
       });
 
-      // Trigger storage event to notify other components
-      window.dispatchEvent(new Event("storage"));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
 
-      // Show success message
+      const updatedProject = await response.json();
+
       setMessage({
-        text: `Project "${formData.title}" updated successfully!`,
+        text: `Project "${updatedProject.title}" updated successfully!`,
         type: "success",
       });
 
-      // Redirect after 2 seconds
+      // Redirect to projects page after 2 seconds
       setTimeout(() => {
         router.push("/admin/projects");
       }, 2000);
     } catch (error) {
-      // Show error message
       setMessage({
-        text: `Error updating project: ${error instanceof Error ? error.message : "Unknown error"
-          }`,
+        text: `Error updating project: ${error instanceof Error ? error.message : "Unknown error"}`,
         type: "error",
       });
     }
@@ -230,7 +226,7 @@ export default function EditProjectPage({
               {message.text && (
                 <div
                   className={
-                    "mb-6 p-4 rounded-md " +
+                    `mb-6 p-4 rounded-md ` +
                     (message.type === "success"
                       ? "bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-200"
                       : "bg-red-50 dark:bg-red-900 text-red-800 dark:text-red-200")
@@ -269,10 +265,10 @@ export default function EditProjectPage({
                   <textarea
                     id="description"
                     name="description"
-                    rows={3}
                     value={formData.description}
                     onChange={handleChange}
                     required
+                    rows={3}
                     className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                   ></textarea>
                 </div>
@@ -287,24 +283,40 @@ export default function EditProjectPage({
                   <textarea
                     id="longDescription"
                     name="longDescription"
-                    rows={5}
                     value={formData.longDescription}
                     onChange={handleChange}
+                    rows={6}
                     className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                   ></textarea>
                 </div>
 
-                <ImageSelector
-                  selectedImage={formData.image}
-                  onChange={handleImageChange}
-                />
+                <div>
+                  <label
+                    htmlFor="image"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Image URL *
+                  </label>
+                  <div className="mt-1 flex items-center space-x-4">
+                    <input
+                      type="text"
+                      id="image"
+                      name="image"
+                      value={formData.image}
+                      onChange={handleChange}
+                      required
+                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                    />
+                    <ImageSelector onImageSelect={handleImageChange} currentImage={formData.image} />
+                  </div>
+                </div>
 
                 <div>
                   <label
                     htmlFor="tags"
                     className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
-                    Tags * (comma separated)
+                    Tags (comma-separated) *
                   </label>
                   <input
                     type="text"
@@ -313,49 +325,42 @@ export default function EditProjectPage({
                     value={formData.tags}
                     onChange={handleChange}
                     required
-                    placeholder="Next.js, React, Tailwind CSS"
                     className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label
-                      htmlFor="demoLink"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Demo Link *
-                    </label>
-                    <input
-                      type="url"
-                      id="demoLink"
-                      name="demoLink"
-                      value={formData.demoLink}
-                      onChange={handleChange}
-                      required
-                      placeholder="https://example.com"
-                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    />
-                  </div>
+                <div>
+                  <label
+                    htmlFor="demoLink"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Demo Link
+                  </label>
+                  <input
+                    type="url"
+                    id="demoLink"
+                    name="demoLink"
+                    value={formData.demoLink}
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                  />
+                </div>
 
-                  <div>
-                    <label
-                      htmlFor="codeLink"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Code Link *
-                    </label>
-                    <input
-                      type="url"
-                      id="codeLink"
-                      name="codeLink"
-                      value={formData.codeLink}
-                      onChange={handleChange}
-
-                      placeholder="https://github.com/username/repo"
-                      className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    />
-                  </div>
+                <div>
+                  <label
+                    htmlFor="codeLink"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Code Link
+                  </label>
+                  <input
+                    type="url"
+                    id="codeLink"
+                    name="codeLink"
+                    value={formData.codeLink}
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                  />
                 </div>
 
                 <div>
@@ -368,9 +373,9 @@ export default function EditProjectPage({
                   <textarea
                     id="challenges"
                     name="challenges"
-                    rows={3}
                     value={formData.challenges}
                     onChange={handleChange}
+                    rows={3}
                     className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                   ></textarea>
                 </div>
@@ -385,9 +390,9 @@ export default function EditProjectPage({
                   <textarea
                     id="solutions"
                     name="solutions"
-                    rows={3}
                     value={formData.solutions}
                     onChange={handleChange}
+                    rows={3}
                     className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                   ></textarea>
                 </div>

@@ -1,58 +1,60 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getAllProjects, deleteProject } from "@/data/projects";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
 import AdminHeader from "@/components/AdminHeader";
 import Image from "next/image";
+import config from "@/config";
 
 export default function ManageProjectsPage() {
-  const [projects, setProjects] = useState(getAllProjects());
+  const [projects, setProjects] = useState([]);
   const [message, setMessage] = useState({ text: "", type: "" });
+  const [error, setError] = useState(null);
 
-  // Refresh projects when component mounts and when localStorage changes
+  // Fetch projects when component mounts and when a project is deleted
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}/api/projects`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setProjects(data);
+    } catch (error) {
+      setError("Failed to fetch projects");
+    }
+  };
+
   useEffect(() => {
-    setProjects(getAllProjects());
+    fetchProjects();
+  }, []); // Empty dependency array means this runs once on mount
 
-    // Listen for storage events to update projects when they change
-    const handleStorageChange = () => {
-      setProjects(getAllProjects());
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
-
-  const handleDeleteProject = (id, title) => {
-    // Confirm deletion
+  const handleDeleteProject = async (projectId, title) => {
     if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
       try {
-        // Delete the project
-        deleteProject(id);
+        const response = await fetch(`${config.apiUrl}/api/projects/${projectId}`, {
+          method: "DELETE",
+        });
 
-        // Update projects list
-        setProjects(getAllProjects());
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
 
-        // Trigger storage event to notify other components
-        window.dispatchEvent(new Event("storage"));
+        // Refresh projects list after successful deletion
+        fetchProjects();
 
-        // Show success message
         setMessage({
           text: `Project "${title}" deleted successfully!`,
           type: "success",
         });
 
-        // Clear message after 3 seconds
         setTimeout(() => {
           setMessage({ text: "", type: "" });
         }, 3000);
       } catch (error) {
-        // Show error message
         setMessage({
           text: `Error deleting project: ${error instanceof Error ? error.message : "Unknown error"
             }`,
@@ -98,8 +100,8 @@ export default function ManageProjectsPage() {
             {message.text && (
               <div
                 className={`mb-6 p-4 rounded-md ${message.type === "success"
-                    ? "bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-200"
-                    : "bg-red-50 dark:bg-red-900 text-red-800 dark:text-red-200"
+                  ? "bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-200"
+                  : "bg-red-50 dark:bg-red-900 text-red-800 dark:text-red-200"
                   }`}
               >
                 {message.text}
@@ -110,7 +112,7 @@ export default function ManageProjectsPage() {
               <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
                 <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                   {projects.map((project) => (
-                    <li key={project.id}>
+                    <li key={project._id}>
                       <div className="px-4 py-5 sm:px-6">
                         <div className="flex items-start justify-between">
                           <div className="flex items-start space-x-4">
@@ -156,14 +158,14 @@ export default function ManageProjectsPage() {
                           {/* Actions */}
                           <div className="flex space-x-2">
                             <Link
-                              href={`/admin/projects/edit/${project.id}`}
+                              href={`/admin/projects/edit/${project._id}`}
                               className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
                               Edit
                             </Link>
                             <button
                               onClick={() =>
-                                handleDeleteProject(project.id, project.title)
+                                handleDeleteProject(project._id, project.title)
                               }
                               className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                             >

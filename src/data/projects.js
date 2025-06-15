@@ -74,7 +74,6 @@ if (typeof window !== "undefined") {
     try {
       projects = JSON.parse(savedProjects);
     } catch (error) {
-      console.error("Error parsing saved projects:", error);
       projects = [...initialProjects];
     }
   }

@@ -41,7 +41,6 @@ export async function POST(request) {
       url: "/assets/resume/resume.pdf",
     });
   } catch (error) {
-    console.error("Error uploading resume:", error);
     return NextResponse.json(
       { error: "Failed to upload resume" },
       { status: 500 }

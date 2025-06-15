@@ -46,7 +46,6 @@ export default function AdminProfilePage() {
           ...prev,
           image: fixedUrl,
         }));
-        console.log("Fixed ImgBB URL");
       }
     }
   }, [formData.image]);
@@ -80,12 +79,6 @@ export default function AdminProfilePage() {
       ...prev,
       image: fixedImagePath,
     }));
-
-    if (fixedImagePath !== imagePath) {
-      console.log(
-        "Fixed ImgBB URL on image change:", imagePath, "->", fixedImagePath
-      );
-    }
   };
 
   const handleSubmit = (e) => {

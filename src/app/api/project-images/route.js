@@ -22,9 +22,8 @@ export async function GET() {
 
     return NextResponse.json({ images });
   } catch (error) {
-    console.error("Error reading project images:", error);
     return NextResponse.json(
-      { error: "Failed to load project images" },
+      { error: "Failed to read project images" },
       { status: 500 }
     );
   }
