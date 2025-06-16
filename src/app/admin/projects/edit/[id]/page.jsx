@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import Link from "next/link";
 import AdminHeader from "@/components/AdminHeader";
 import ImageSelector from "@/components/ImageSelector";
 import config from "@/config";
+import toast, { Toaster } from "react-hot-toast";
 
 // Function to fix ImgBB URLs
 const fixImgBBUrl = (url) => {
@@ -37,7 +36,6 @@ export default function EditProjectPage({ params }) {
     solutions: "",
   });
 
-  const [message, setMessage] = useState({ text: "", type: "" });
   const [loading, setLoading] = useState(true);
 
   // Fetch project data from backend
@@ -45,10 +43,29 @@ export default function EditProjectPage({ params }) {
     const fetchProject = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${config.apiUrl}/api/projects/${projectId}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+
+        if (!projectId) {
+          throw new Error("Project ID is missing");
         }
+
+        // Validate MongoDB ObjectId format
+        if (!/^[0-9a-fA-F]{24}$/.test(projectId)) {
+          throw new Error("Invalid project ID format");
+        }
+
+        const response = await fetch(`${config.apiUrl}/api/projects/${projectId}`);
+
+        // Check if the response is JSON
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error(`Server returned non-JSON response: ${contentType}`);
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
         const project = await response.json();
 
         if (project) {
@@ -69,17 +86,10 @@ export default function EditProjectPage({ params }) {
             solutions: project.solutions || "",
           });
         } else {
-          setMessage({
-            text: "Project not found",
-            type: "error",
-          });
+          toast.error("Project not found");
         }
       } catch (error) {
-        console.error("Failed to fetch project:", error);
-        setMessage({
-          text: `Error loading project: ${error instanceof Error ? error.message : "Unknown error"}`,
-          type: "error",
-        });
+        toast.error(`Error loading project: ${error.message}`);
       } finally {
         setLoading(false);
       }
@@ -103,10 +113,6 @@ export default function EditProjectPage({ params }) {
     }
   }, [formData.image]);
 
-  /**
-   * Handle form input changes
-   * @param {Event} e - The change event from the input
-   */
   const handleChange = (e) => {
     const { name, value, type } = e.target;
 
@@ -164,27 +170,21 @@ export default function EditProjectPage({ params }) {
 
       const updatedProject = await response.json();
 
-      setMessage({
-        text: `Project "${updatedProject.title}" updated successfully!`,
-        type: "success",
-      });
+      toast.success(`Project "${updatedProject.title}" updated successfully!`);
 
       // Redirect to projects page after 2 seconds
       setTimeout(() => {
         router.push("/admin/projects");
       }, 2000);
     } catch (error) {
-      setMessage({
-        text: `Error updating project: ${error instanceof Error ? error.message : "Unknown error"}`,
-        type: "error",
-      });
+      toast.error(`Error updating project: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen">
-        <Navbar />
+        <AdminHeader title="Edit Project" />
         <main className="pt-16">
           <div className="py-16 bg-white dark:bg-gray-950">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -196,14 +196,14 @@ export default function EditProjectPage({ params }) {
             </div>
           </div>
         </main>
-        <Footer />
+        <Toaster position="top-right" />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen">
-      <Navbar />
+      <AdminHeader title="Edit Project" />
       <main className="pt-16">
         <div className="py-16 bg-white dark:bg-gray-950">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -212,228 +212,208 @@ export default function EditProjectPage({ params }) {
                 Edit Project
               </h1>
               <p className="mt-4 max-w-2xl text-xl text-gray-500 dark:text-gray-400 lg:mx-auto">
-                Update the details of your project.
+                Update an existing project in your portfolio.
               </p>
             </div>
-          </div>
-        </div>
 
-        <section className="py-16 bg-gray-50 dark:bg-gray-900">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <AdminHeader />
+            <div className="mt-12">
+              <form onSubmit={handleSubmit} className="space-y-8 divide-y divide-gray-200 dark:divide-gray-700">
+                <div className="space-y-8 divide-y divide-gray-200 dark:divide-gray-700 sm:space-y-5">
+                  <div>
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">Project Details</h3>
+                    <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">This information will be displayed publicly on your portfolio.</p>
 
-            <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
-              {message.text && (
-                <div
-                  className={
-                    `mb-6 p-4 rounded-md ` +
-                    (message.type === "success"
-                      ? "bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-200"
-                      : "bg-red-50 dark:bg-red-900 text-red-800 dark:text-red-200")
-                  }
-                >
-                  {message.text}
-                </div>
-              )}
+                    <div className="mt-6 sm:mt-5 space-y-6 sm:space-y-5">
+                      <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 dark:sm:border-gray-700 sm:pt-5">
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-200 sm:mt-px sm:pt-2">
+                          Title
+                        </label>
+                        <div className="mt-1 sm:mt-0 sm:col-span-2">
+                          <input
+                            type="text"
+                            name="title"
+                            id="title"
+                            autoComplete="given-name"
+                            className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            value={formData.title}
+                            onChange={handleChange}
+                            required
+                          />
+                        </div>
+                      </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label
-                    htmlFor="title"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
+                      <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 dark:sm:border-gray-700 sm:pt-5">
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-200 sm:mt-px sm:pt-2">
+                          Short Description
+                        </label>
+                        <div className="mt-1 sm:mt-0 sm:col-span-2">
+                          <textarea
+                            id="description"
+                            name="description"
+                            rows="3"
+                            className="max-w-lg shadow-sm block w-full focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            value={formData.description}
+                            onChange={handleChange}
+                            required
+                          ></textarea>
+                          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">A brief description for your project.</p>
+                        </div>
+                      </div>
 
-                <div>
-                  <label
-                    htmlFor="description"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Short Description *
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    required
-                    rows={3}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  ></textarea>
-                </div>
+                      <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 dark:sm:border-gray-700 sm:pt-5">
+                        <label htmlFor="longDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-200 sm:mt-px sm:pt-2">
+                          Long Description
+                        </label>
+                        <div className="mt-1 sm:mt-0 sm:col-span-2">
+                          <textarea
+                            id="longDescription"
+                            name="longDescription"
+                            rows="6"
+                            className="max-w-lg shadow-sm block w-full focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            value={formData.longDescription}
+                            onChange={handleChange}
+                          ></textarea>
+                          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">A more detailed description of your project, including its purpose, features, and technologies used.</p>
+                        </div>
+                      </div>
 
-                <div>
-                  <label
-                    htmlFor="longDescription"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Long Description
-                  </label>
-                  <textarea
-                    id="longDescription"
-                    name="longDescription"
-                    value={formData.longDescription}
-                    onChange={handleChange}
-                    rows={6}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  ></textarea>
-                </div>
+                      <ImageSelector
+                        currentImage={formData.image}
+                        onImageChange={handleImageChange}
+                      />
 
-                <div>
-                  <label
-                    htmlFor="image"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Image URL *
-                  </label>
-                  <div className="mt-1 flex items-center space-x-4">
-                    <input
-                      type="text"
-                      id="image"
-                      name="image"
-                      value={formData.image}
-                      onChange={handleChange}
-                      required
-                      className="block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    />
-                    <ImageSelector onImageSelect={handleImageChange} currentImage={formData.image} />
+                      <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 dark:sm:border-gray-700 sm:pt-5">
+                        <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-200 sm:mt-px sm:pt-2">
+                          Tags
+                        </label>
+                        <div className="mt-1 sm:mt-0 sm:col-span-2">
+                          <input
+                            type="text"
+                            name="tags"
+                            id="tags"
+                            className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            value={formData.tags}
+                            onChange={handleChange}
+                            placeholder="e.g., React, Node.js, MongoDB"
+                          />
+                          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Comma-separated list of technologies or keywords.</p>
+                        </div>
+                      </div>
+
+                      <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 dark:sm:border-gray-700 sm:pt-5">
+                        <label htmlFor="demoLink" className="block text-sm font-medium text-gray-700 dark:text-gray-200 sm:mt-px sm:pt-2">
+                          Demo Link
+                        </label>
+                        <div className="mt-1 sm:mt-0 sm:col-span-2">
+                          <input
+                            type="url"
+                            name="demoLink"
+                            id="demoLink"
+                            className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            value={formData.demoLink}
+                            onChange={handleChange}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 dark:sm:border-gray-700 sm:pt-5">
+                        <label htmlFor="codeLink" className="block text-sm font-medium text-gray-700 dark:text-gray-200 sm:mt-px sm:pt-2">
+                          Code Link (GitHub)
+                        </label>
+                        <div className="mt-1 sm:mt-0 sm:col-span-2">
+                          <input
+                            type="url"
+                            name="codeLink"
+                            id="codeLink"
+                            className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            value={formData.codeLink}
+                            onChange={handleChange}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 dark:sm:border-gray-700 sm:pt-5">
+                        <label htmlFor="challenges" className="block text-sm font-medium text-gray-700 dark:text-gray-200 sm:mt-px sm:pt-2">
+                          Challenges
+                        </label>
+                        <div className="mt-1 sm:mt-0 sm:col-span-2">
+                          <textarea
+                            id="challenges"
+                            name="challenges"
+                            rows="3"
+                            className="max-w-lg shadow-sm block w-full focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            value={formData.challenges}
+                            onChange={handleChange}
+                          ></textarea>
+                          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Describe any challenges faced during the project.</p>
+                        </div>
+                      </div>
+
+                      <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 dark:sm:border-gray-700 sm:pt-5">
+                        <label htmlFor="solutions" className="block text-sm font-medium text-gray-700 dark:text-gray-200 sm:mt-px sm:pt-2">
+                          Solutions
+                        </label>
+                        <div className="mt-1 sm:mt-0 sm:col-span-2">
+                          <textarea
+                            id="solutions"
+                            name="solutions"
+                            rows="3"
+                            className="max-w-lg shadow-sm block w-full focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            value={formData.solutions}
+                            onChange={handleChange}
+                          ></textarea>
+                          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">How you overcame the challenges.</p>
+                        </div>
+                      </div>
+
+                      <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 dark:sm:border-gray-700 sm:pt-5">
+                        <div className="relative flex items-start">
+                          <div className="flex items-center h-5">
+                            <input
+                              id="featured"
+                              name="featured"
+                              type="checkbox"
+                              className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:checked:bg-indigo-500"
+                              checked={formData.featured}
+                              onChange={handleChange}
+                            />
+                          </div>
+                          <div className="ml-3 text-sm">
+                            <label htmlFor="featured" className="font-medium text-gray-700 dark:text-gray-200">
+                              Featured Project
+                            </label>
+                            <p className="text-gray-500 dark:text-gray-400">Display this project on the main landing page.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="tags"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Tags (comma-separated) *
-                  </label>
-                  <input
-                    type="text"
-                    id="tags"
-                    name="tags"
-                    value={formData.tags}
-                    onChange={handleChange}
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="demoLink"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Demo Link
-                  </label>
-                  <input
-                    type="url"
-                    id="demoLink"
-                    name="demoLink"
-                    value={formData.demoLink}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="codeLink"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Code Link
-                  </label>
-                  <input
-                    type="url"
-                    id="codeLink"
-                    name="codeLink"
-                    value={formData.codeLink}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="challenges"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Challenges
-                  </label>
-                  <textarea
-                    id="challenges"
-                    name="challenges"
-                    value={formData.challenges}
-                    onChange={handleChange}
-                    rows={3}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  ></textarea>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="solutions"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Solutions
-                  </label>
-                  <textarea
-                    id="solutions"
-                    name="solutions"
-                    value={formData.solutions}
-                    onChange={handleChange}
-                    rows={3}
-                    className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  ></textarea>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="featured"
-                    name="featured"
-                    checked={formData.featured}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
-                  <label
-                    htmlFor="featured"
-                    className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-                  >
-                    Featured Project
-                  </label>
-                </div>
-
-                <div className="flex justify-between">
-                  <Link
-                    href="/admin/projects"
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-700 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Cancel
-                  </Link>
-                  <button
-                    type="submit"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Update Project
-                  </button>
+                <div className="pt-5">
+                  <div className="flex justify-end">
+                    <Link href="/admin/projects">
+                      <button
+                        type="button"
+                        className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-600"
+                      >
+                        Cancel
+                      </button>
+                    </Link>
+                    <button
+                      type="submit"
+                      className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Save
+                    </button>
+                  </div>
                 </div>
               </form>
             </div>
           </div>
-        </section>
+        </div>
       </main>
-      <Footer />
+      <Toaster position="top-right" />
     </div>
   );
 }

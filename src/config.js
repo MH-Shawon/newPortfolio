@@ -1,7 +1,5 @@
 const config = {
-  apiUrl:
-    process.env.NEXT_PUBLIC_API_URL ||
-    "https://new-portfolio-beckend.vercel.app",
+  apiUrl: "http://localhost:5000",
 };
 
 export default config;
