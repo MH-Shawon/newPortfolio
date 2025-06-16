@@ -38,7 +38,7 @@ export default async function ProjectDetailPage({ params }) {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <Link href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline mb-8 inline-block">
+                <Link href="/#projects" className="text-indigo-600 dark:text-indigo-400 hover:underline mb-8 inline-block">
                     &larr; Back to Projects
                 </Link>
 
