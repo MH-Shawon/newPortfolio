@@ -10,10 +10,27 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const pathname = usePathname();
+  const [hash, setHash] = useState('');
 
   useEffect(() => {
     // Check if user is logged in
     setIsUserLoggedIn(isLoggedIn());
+
+    // Handle hash changes
+    const handleHashChange = () => {
+      setHash(window.location.hash);
+    };
+
+    // Set initial hash
+    handleHashChange();
+
+    // Add event listener for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
   }, []);
 
   const toggleMenu = () => {
@@ -21,7 +38,10 @@ const Navbar = () => {
   };
 
   const isActive = (path) => {
-    if (path === "/" && pathname !== "/") return false;
+    if (path === "/" && pathname !== "/") {
+      // Check if we're on the home page with a projects hash
+      return pathname === "/" && hash === "#projects";
+    }
     return pathname.startsWith(path);
   };
 
