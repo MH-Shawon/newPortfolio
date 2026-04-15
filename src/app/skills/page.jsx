@@ -22,7 +22,7 @@ export default function SkillsPage() {
 
         <Skills />
 
-        <section className="py-16 bg-gray-50 dark:bg-gray-900">
+        {/* <section className="py-16 bg-gray-50 dark:bg-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="lg:text-center mb-12">
               <h2 className="text-base text-indigo-600 dark:text-indigo-400 font-semibold tracking-wide uppercase">
@@ -129,7 +129,7 @@ export default function SkillsPage() {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
 
         <section className="py-16 bg-white dark:bg-gray-950">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -217,7 +217,7 @@ export default function SkillsPage() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                  Problem Solving
+                  Problem Solving (90%)
                 </h3>
                 <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
                   Analytical thinking and creative approaches to solving complex

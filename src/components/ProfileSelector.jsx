@@ -33,12 +33,7 @@ const fixImgBBUrl = (url) => {
  * @param {Function} props.onChange - Callback when image changes
  */
 const ProfileSelector = ({ selectedImage, onChange }) => {
-  const [availableImages, setAvailableImages] = useState([
-    "/assets/profile/default-profile.jpg",
-  ]);
-  const [showSelector, setShowSelector] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
 
   // Fix image URL when component mounts
@@ -50,36 +45,6 @@ const ProfileSelector = ({ selectedImage, onChange }) => {
       }
     }
   }, [selectedImage, onChange]);
-
-  // Fetch available images when component mounts
-  useEffect(() => {
-    async function loadImages() {
-      setIsLoading(true);
-      try {
-        const response = await fetch("/api/profile-images");
-        if (response.ok) {
-          const data = await response.json();
-          setAvailableImages(data.images);
-        }
-      } catch (error) {
-        setImages([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    if (showSelector) {
-      loadImages();
-    }
-  }, [showSelector]);
-
-  // Function to handle image selection
-  const handleSelectImage = (imagePath) => {
-    setImageError(false);
-    const fixedImagePath = fixImgBBUrl(imagePath);
-    onChange(fixedImagePath);
-    setShowSelector(false);
-  };
 
   // Function to handle custom image URL input
   const handleCustomImageUrl = (e) => {
@@ -128,19 +93,7 @@ const ProfileSelector = ({ selectedImage, onChange }) => {
           <button
             type="button"
             onClick={() => {
-              setShowSelector(!showSelector);
-              setShowUploader(false);
-            }}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-700 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            {showSelector ? "Hide Gallery" : "Choose from Gallery"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
               setShowUploader(!showUploader);
-              setShowSelector(false);
             }}
             className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
@@ -158,10 +111,10 @@ const ProfileSelector = ({ selectedImage, onChange }) => {
           value={selectedImage || ""}
           onChange={handleCustomImageUrl}
           className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-          placeholder="/assets/profile/your-image.jpg"
+          placeholder="https://i.ibb.co/..."
         />
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Enter a URL, select from the gallery, or upload a new image
+          Enter a URL, or upload a new image
         </p>
       </div>
 
@@ -171,37 +124,6 @@ const ProfileSelector = ({ selectedImage, onChange }) => {
             Upload Profile Image
           </h3>
           <ProfileImageUploader onImageUploaded={handleImageUploaded} />
-        </div>
-      )}
-
-      {showSelector && (
-        <div className="mt-4">
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {availableImages.map((imagePath, index) => (
-                <div
-                  key={index}
-                  onClick={() => handleSelectImage(imagePath)}
-                  className={`relative h-24 cursor-pointer border-2 rounded-full overflow-hidden ${selectedImage === imagePath
-                    ? "border-indigo-500"
-                    : "border-gray-300 dark:border-gray-700"
-                    }`}
-                >
-                  <Image
-                    src={imagePath}
-                    alt={`Profile image ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    unoptimized={true}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       )}
     </div>

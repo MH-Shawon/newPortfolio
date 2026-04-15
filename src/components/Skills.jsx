@@ -11,7 +11,6 @@ import {
     FaNodeJs,
     FaGitAlt,
     FaGithub,
-    FaDocker,
     FaFigma,
 } from "react-icons/fa";
 import {
@@ -23,9 +22,10 @@ import {
     SiPostgresql,
     SiGraphql,
     SiJest,
+    SiReactquery,
 } from "react-icons/si";
 import { TbApi } from "react-icons/tb";
-import { VscVscode } from "react-icons/vsc";
+import { VscVscode, VscCopilot } from "react-icons/vsc";
 
 const Skills = () => {
     const [activeTab, setActiveTab] = useState("frontend");
@@ -34,28 +34,29 @@ const Skills = () => {
 
     const skills = {
         frontend: [
-            { name: "HTML5", level: 90, icon: FaHtml5, color: "#E34F26" },
-            { name: "CSS3", level: 85, icon: FaCss3Alt, color: "#1572B6" },
-            { name: "JavaScript", level: 90, icon: FaJs, color: "#F7DF1E" },
-            { name: "TypeScript", level: 85, icon: SiTypescript, color: "#3178C6" },
-            { name: "React", level: 90, icon: FaReact, color: "#61DAFB" },
-            { name: "Next.js", level: 85, icon: SiNextdotjs, color: "#000000" },
-            { name: "Tailwind CSS", level: 90, icon: SiTailwindcss, color: "#06B6D4" },
+            { name: "HTML5", level: 100, icon: FaHtml5, color: "#E34F26" },
+            { name: "CSS3", level: 100, icon: FaCss3Alt, color: "#1572B6" },
+            { name: "JavaScript", level: 95, icon: FaJs, color: "#F7DF1E" },
+            { name: "TypeScript", level: 90, icon: SiTypescript, color: "#3178C6" },
+            { name: "React", level: 95, icon: FaReact, color: "#61DAFB" },
+            { name: "Next.js", level: 90, icon: SiNextdotjs, color: "#000000" },
+            { name: "Tailwind CSS", level: 100, icon: SiTailwindcss, color: "#06B6D4" },
+            { name: "Tanstack Query", level: 95, icon: SiReactquery, color: "#FF4154" },
         ],
         backend: [
             { name: "Node.js", level: 80, icon: FaNodeJs, color: "#339933" },
             { name: "Express.js", level: 80, icon: SiExpress, color: "#000000" },
             { name: "MongoDB", level: 75, icon: SiMongodb, color: "#47A248" },
-            { name: "PostgreSQL", level: 70, icon: SiPostgresql, color: "#336791" },
+            { name: "PostgreSQL", level: 90, icon: SiPostgresql, color: "#336791" },
             { name: "GraphQL", level: 65, icon: SiGraphql, color: "#E10098" },
-            { name: "REST API", level: 80, icon: TbApi, color: "#4A90E2" },
+            { name: "REST API", level: 100, icon: TbApi, color: "#4A90E2" },
         ],
         tools: [
             { name: "Git", level: 85, icon: FaGitAlt, color: "#F05032" },
             { name: "GitHub", level: 85, icon: FaGithub, color: "#181717" },
             { name: "VS Code", level: 90, icon: VscVscode, color: "#007ACC" },
             { name: "Figma", level: 90, icon: FaFigma, color: "#F24E1E" },
-            { name: "Docker", level: 60, icon: FaDocker, color: "#2496ED" },
+            { name: "Cursor", level: 95, icon: VscCopilot, color: "#10B981" },
             { name: "Jest", level: 70, icon: SiJest, color: "#C21325" },
         ],
     };

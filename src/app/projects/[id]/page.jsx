@@ -1,35 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import config from "@/config";
+import { readProjects } from "@/lib/db";
 
-const fetchProject = async (id) => {
+export default async function ProjectDetailPage({ params }) {
+    const { id } = params;
+
+    let project = null;
     try {
-        const response = await fetch(`${config.apiUrl}/api/projects/${id}`, {
-            cache: 'no-store',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            if (response.status === 404) {
-                notFound();
-            }
-            throw new Error(`Failed to fetch project: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        return data;
+        const projects = await readProjects();
+        project = projects.find((p) => p._id === id);
     } catch (error) {
         console.error("Error fetching project:", error);
         notFound();
     }
-};
-
-export default async function ProjectDetailPage({ params }) {
-    const { id } = params;
-    const project = await fetchProject(id);
 
     if (!project) {
         notFound();

@@ -2,23 +2,23 @@
 
 // Initial profile data
 let profileData = {
-  name: "John Doe",
+  name: "Md. Mohsin Hossain",
   title: "Full Stack Developer",
   bio: "A passionate web developer with a keen eye for design and a love for creating seamless user experiences.",
   image: "/assets/profile/IMG-20240913-WA0023.jpg",
-  email: "john.doe@example.com",
-  phone: "+1 (555) 123-4567",
-  location: "New York, NY",
+  email: "mohsinshawon18@gmail.com",
+  phone: "+8801635017181",
+  location: "Cumilla, Chittagong,Bangladesh",
   social: {
-    github: "https://github.com/johndoe",
-    linkedin: "https://linkedin.com/in/johndoe",
-    twitter: "https://twitter.com/johndoe",
+    github: "https://github.com/MH-Shawon",
+    linkedin: "https://linkedin.com/in/md-mohsin-hossain-324b9b1b7",
+    twitter: "https://x.com/MhShawo50365332",
   },
 };
 
 // Load profile data from localStorage if available
 if (typeof window !== "undefined") {
-  const savedProfile = localStorage.getItem("portfolio_profile");
+  const savedProfile = localStorage.getItem("portfolio_profile_v2");
   if (savedProfile) {
     try {
       profileData = JSON.parse(savedProfile);
@@ -39,7 +39,7 @@ export function updateProfile(newProfileData) {
 
   // Save to localStorage
   if (typeof window !== "undefined") {
-    localStorage.setItem("portfolio_profile", JSON.stringify(profileData));
+    localStorage.setItem("portfolio_profile_v2", JSON.stringify(profileData));
   }
 
   return { ...profileData };
@@ -51,7 +51,7 @@ export function updateProfileImage(imagePath) {
 
   // Save to localStorage
   if (typeof window !== "undefined") {
-    localStorage.setItem("portfolio_profile", JSON.stringify(profileData));
+    localStorage.setItem("portfolio_profile_v2", JSON.stringify(profileData));
   }
 
   return { ...profileData };

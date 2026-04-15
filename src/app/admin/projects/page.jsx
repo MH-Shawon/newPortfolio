@@ -12,6 +12,7 @@ export default function ProjectsPage() {
   const router = useRouter();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [projectToDelete, setProjectToDelete] = useState(null);
 
   useEffect(() => {
     fetchProjects();
@@ -34,13 +35,15 @@ export default function ProjectsPage() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this project?")) {
-      return;
-    }
+  const confirmDelete = (id) => {
+    setProjectToDelete(id);
+  };
+
+  const executeDelete = async () => {
+    if (!projectToDelete) return;
 
     try {
-      const response = await fetch(`${config.apiUrl}/api/projects/${id}`, {
+      const response = await fetch(`${config.apiUrl}/api/projects/${projectToDelete}`, {
         method: "DELETE",
       });
 
@@ -54,6 +57,8 @@ export default function ProjectsPage() {
     } catch (error) {
       console.error("Error deleting project:", error);
       toast.error("Error deleting project");
+    } finally {
+      setProjectToDelete(null);
     }
   };
 
@@ -145,7 +150,7 @@ export default function ProjectsPage() {
                       Edit
                     </Link>
                     <button
-                      onClick={() => handleDelete(project._id)}
+                      onClick={() => confirmDelete(project._id)}
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                     >
                       Delete
@@ -157,6 +162,39 @@ export default function ProjectsPage() {
           </div>
         </section>
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {projectToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-70 transition-opacity">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-sm w-full p-6 transform transition-all">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full dark:bg-red-900/30 mb-4">
+              <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">Delete Project</h3>
+            <p className="text-sm text-center text-gray-500 dark:text-gray-400 mb-6">
+              Are you sure you want to delete this project? This action cannot be undone.
+            </p>
+            <div className="flex justify-center space-x-3">
+              <button
+                type="button"
+                onClick={() => setProjectToDelete(null)}
+                className="px-5 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={executeDelete}
+                className="px-5 py-2.5 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

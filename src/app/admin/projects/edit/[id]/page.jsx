@@ -279,7 +279,7 @@ export default function EditProjectPage({ params }) {
 
                       <ImageSelector
                         currentImage={formData.image}
-                        onImageChange={handleImageChange}
+                        onImageSelect={handleImageChange}
                       />
 
                       <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 dark:sm:border-gray-700 sm:pt-5">

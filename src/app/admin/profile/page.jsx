@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getProfile, updateProfile } from "@/data/profile";
+import toast, { Toaster } from "react-hot-toast";
 
 import AdminHeader from "@/components/AdminHeader";
 import ProfileSelector from "../../../components/ProfileSelector";
@@ -33,8 +34,6 @@ export default function AdminProfilePage() {
     }
     return profile;
   });
-
-  const [message, setMessage] = useState({ text: "", type: "" });
 
   // Fix image URL when it changes
   useEffect(() => {
@@ -97,28 +96,17 @@ export default function AdminProfilePage() {
       window.dispatchEvent(new Event("storage"));
 
       // Show success message
-      setMessage({
-        text: "Profile updated successfully!",
-        type: "success",
-      });
+      toast.success("Profile updated successfully!");
 
-      // Clear message after 3 seconds
-      setTimeout(() => {
-        setMessage({ text: "", type: "" });
-      }, 3000);
     } catch (error) {
       // Show error message
-      setMessage({
-        text: `Error updating profile: ${error instanceof Error ? error.message : "Unknown error"
-          }`,
-        type: "error",
-      });
+      toast.error(`Error updating profile: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   };
 
   return (
     <div className="min-h-screen">
-     
+      <Toaster position="top-right" reverseOrder={false} />
       <main className="">
         <div className="py-16 bg-white dark:bg-gray-950">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -138,17 +126,6 @@ export default function AdminProfilePage() {
             <AdminHeader />
 
             <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
-              {message.text && (
-                <div
-                  className={`mb - 6 p - 4 rounded - md ${message.type === "success"
-                    ? "bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-200"
-                    : "bg-red-50 dark:bg-red-900 text-red-800 dark:text-red-200"
-                    }`}
-                >
-                  {message.text}
-                </div>
-              )}
-
               <form onSubmit={handleSubmit} className="space-y-6">
                 <ProfileSelector
                   selectedImage={formData.image}
